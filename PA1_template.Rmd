@@ -1,25 +1,61 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: Sarah Weadon
 output: 
   html_document:
     keep_md: true
 ---
 
 
-## Loading and preprocessing the data
+### Loading and preprocessing the data
+
+Some text before my code
+
+```{r message = FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+activity.data <- read_csv(unz(list.files()[1], "activity.csv"))
+```
+Some text after my code
 
 
+### What is mean total number of steps taken per day?
 
-## What is mean total number of steps taken per day?
+```{r}
+n.days <- n_distinct(activity.data$date)
+ttl.steps <- sum(activity.data$steps, na.rm = T)
+avg.daily.steps <- ttl.steps / n.days
+
+```
+
+The subject took `r format(ttl.steps, big.mark = ",")` steps over the `r n.days` day period. This is an average of `r format(avg.daily.steps, big.mark = ",")` steps per day.
+
+### What is the average daily activity pattern?
+
+```{r}
+daily.ttl <- activity.data %>% 
+  group_by(date) %>% 
+  summarize(steps = sum(steps, na.rm = T))
+
+ggplot(daily.ttl, aes(steps)) +
+  geom_histogram(binwidth = 2500)#, bins = NULL, na.rm = FALSE,
+  #show.legend = NA, inherit.aes = TRUE)
+```
 
 
+### Imputing missing values
 
-## What is the average daily activity pattern?
+```{r}
 
-
-
-## Imputing missing values
-
+```
 
 
-## Are there differences in activity patterns between weekdays and weekends?
+### Are there differences in activity patterns between weekdays and weekends?
+
+```{r}
+
+```
