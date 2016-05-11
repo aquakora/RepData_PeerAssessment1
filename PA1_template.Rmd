@@ -26,9 +26,21 @@ Some text after my code
 ### What is mean total number of steps taken per day?
 
 ```{r}
+total steps per days, histogram, mean, median
+
 n.days <- n_distinct(activity.data$date)
 ttl.steps <- sum(activity.data$steps, na.rm = T)
 avg.daily.steps <- ttl.steps / n.days
+
+daily.ttl <- activity.data %>% 
+  group_by(date) %>% 
+  summarize(steps = sum(steps, na.rm = T))
+
+daily.avg <- mean(daily.ttl, na.rm = T) # how does this compare to above?
+daily.median <- median(daily.ttl, na.rm = T)
+
+ggplot(daily.ttl, aes(steps)) +
+  geom_histogram(binwidth = 2500)
 
 ```
 
@@ -37,25 +49,31 @@ The subject took `r format(ttl.steps, big.mark = ",")` steps over the `r n.days`
 ### What is the average daily activity pattern?
 
 ```{r}
-daily.ttl <- activity.data %>% 
-  group_by(date) %>% 
-  summarize(steps = sum(steps, na.rm = T))
+interval.avg <- activity.data %>%
+    group_by(interval) %>%
+    summarize(avg.steps = mean(steps, na.rm = T)
+    
+# compare with above
+interval.avg2 <- aggregate(steps ~ interval, activity.data, function(x) mean(x, na.rm = T)
 
-ggplot(daily.ttl, aes(steps)) +
-  geom_histogram(binwidth = 2500)#, bins = NULL, na.rm = FALSE,
-  #show.legend = NA, inherit.aes = TRUE)
+with(interval.avg, plot(interval, avg.steps, type = "l")) # add labels and make pretty
 ```
-
+The 5 minute interval __ to __ was, on average, the period with the most steps.
 
 ### Imputing missing values
 
 ```{r}
+ttl.missing <- sum(is.na(activity.data$steps))
+create a new data set with missing values filled in
+repeat analyses from part 1
 
 ```
-
+Explain method for filling in missing values
+discuss impact of filling in missing values
 
 ### Are there differences in activity patterns between weekdays and weekends?
 
 ```{r}
-
+create factor: weekday/weekend
+repeat part 2 for weekdays and for weekends
 ```
