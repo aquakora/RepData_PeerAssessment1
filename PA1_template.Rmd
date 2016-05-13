@@ -20,9 +20,9 @@ library(stringr)
 
 ```{r}
 activity.data <- read_csv(unz("activity.zip", "activity.csv")) %>%
-  mutate(start.time = str_pad((interval - 5), 4, "left", "0"),
+  mutate(start.time = str_pad(interval, 4, "left", "0"),
          start.time = paste0(substr(start.time, 1, 2), ":", substr(start.time, 3, 4)),
-         end.time = str_pad(interval, 4, "left", "0"),
+         end.time = str_pad((interval + 4), 4, "left", "0"),
          end.time = paste0(substr(end.time, 1, 2), ":", substr(end.time, 3, 4)))
 ```
 
@@ -116,7 +116,9 @@ ttl.missing <- sum(is.na(activity.data$steps))
 #repeat analyses from part 1
 
 ```
-Explain method for filling in missing values
+
+Missing values filled in by using avg # of steps in that time period on that day of the week. For example, a missing value for the interval 21:10-21:14 on a Tuesday would be filled in with the average steops for the interval 21:10 - 21:14 on all other Tuesdays without missing values.
+
 discuss impact of filling in missing values
 
 ### Are there differences in activity patterns between weekdays and weekends?
