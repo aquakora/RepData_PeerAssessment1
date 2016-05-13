@@ -6,10 +6,11 @@ output:
     keep_md: true
 ---
 
+### Introduction
 
-### Loading and preprocessing the data
+This report looks at step activity collected from midnight October 1, 2012, through 11:59 p.m. November 30, 2012, by an anonomyous individual wearing a personal activity tracking device. Activity was recorded as a number of steps taken in 5-minute intervals.
 
-Some text before my code
+Four R packages are required for the code included throughout this report. Messages that may appear when loading these packages have been supressed here.
 
 ```{r message = FALSE}
 library(readr)
@@ -17,6 +18,17 @@ library(dplyr)
 library(ggplot2)
 library(stringr)
 ```
+
+### Loading and preprocessing the data
+
+No preprocessing of the data was required. However, an interval start time and end time in the format of hh:mm were created for graphing convenience. Intervals are 5-minutes each, starting as 0 (midnight), so start and end times follow the pattern illustrated in the table below.
+
+interval | start.time | end.time
+---|---|---
+0  | 00:00 | 00:04
+5  | 00:05 | 00:09
+10 | 00:10 | 00:14
+15 | 00:15 | 00:19
 
 ```{r}
 activity.data <- read_csv(unz("activity.zip", "activity.csv")) %>%
@@ -26,13 +38,9 @@ activity.data <- read_csv(unz("activity.zip", "activity.csv")) %>%
          end.time = paste0(substr(end.time, 1, 2), ":", substr(end.time, 3, 4)))
 ```
 
-Some text after my code
-
-
 ### What is mean total number of steps taken per day?
 
 ```{r}
-#total steps per days, histogram, mean, median
 daily.ttl <- activity.data %>% 
   group_by(date) %>% 
   summarize(steps = sum(steps, na.rm = T))
@@ -41,8 +49,7 @@ daily.avg <- mean(daily.ttl$steps)
 daily.med <- median(daily.ttl$steps)
 ```
 
-Explain how NAs were treated.
-The subject took `r format(sum(daily.ttl$steps), big.mark = ",")` steps over the course of `r n_distinct(daily.ttl$date)` days. This is an average of `r format(round(daily.avg, 2), big.mark = ",")` steps per day. The median number of steps per day was `r format(daily.med, big.mark = ",")`. The difference between the average and median number of steps per day ... skewed..something to look at...the histogram below supported this thing...see section whatever below for discussion on that.
+The subject took `r format(sum(daily.ttl$steps), big.mark = ",")` steps over the course of `r n_distinct(daily.ttl$date)` days. This is an average of `r format(round(daily.avg, 2), big.mark = ",")` steps per day. The median number of steps per day was `r format(daily.med, big.mark = ",")`. The difference between the average and median number of steps per day indicate the data is skewed. Exploring the data further, the histogram below shows `r ` percent of days had 0 to 999 total steps recorded. This indicated a potential problem with the data which is explored and addressed in the "Imputing missing values" section below.
 
 ```{r}
 ggplot(daily.ttl, aes(x = steps)) +
@@ -112,18 +119,98 @@ The 5 minute interval `r max.interval$start.time` to `r max.interval$end.time` w
 
 ```{r}
 ttl.missing <- sum(is.na(activity.data$steps))
+
+activity.data <- activity.data %>% mutate(dow = wday(date))
+dow.interval.avgs <- activity.data %>% 
+    filter(!is.na(steps)) %>% 
+    group_by(dow, interval) %>% 
+    summarize(avg.steps = mean(steps))
+
+mod.activity.data <- activity.data %>% 
+    left_join(dow.interval.avgs, by = c("dow", "interval")) %>%
+    mutate(steps = ifelse(is.na(steps), avg.steps, steps) %>%
+    select(-avg.steps)
 #create a new data set with missing values filled in
 #repeat analyses from part 1
+mod.daily.ttl <- mod.activity.data %>% 
+  group_by(date) %>% 
+  summarize(steps = sum(steps, na.rm = T))
+
+mod.daily.avg <- mean(mod.daily.ttl$steps)
+mod.daily.med <- median(mod.daily.ttl$steps)
 
 ```
 
-Missing values filled in by using avg # of steps in that time period on that day of the week. For example, a missing value for the interval 21:10-21:14 on a Tuesday would be filled in with the average steops for the interval 21:10 - 21:14 on all other Tuesdays without missing values.
+There were `r ttl.missing` intervals with missing step data. Intervals with missing data are different from intervals with zero steps recorded.
 
-discuss impact of filling in missing values
+Missing values were filled in by using avg number of steps in that time period on that day of the week. For example, a missing value for the interval 21:10-21:14 on a Tuesday would be filled in with the average steops for the interval 21:10 - 21:14 on all other Tuesdays without missing values.
+
+# discuss impact of filling in missing values
+As you can see from the historam below...
+
+```{r}
+ggplot(mod.daily.ttl, aes(x = steps)) +
+  geom_histogram(binwidth = 1000, fill = "#4271AE", color = "#1F3552") +
+  scale_x_continuous(name = "Total Steps", 
+                     breaks = seq(0, 22000, 2000),
+                     label = function(x) {format(x, big.mark = ",")}) +
+  scale_y_continuous(name = "Number of Days", 
+                     breaks = seq(0, 20, 2)) +
+  ggtitle("Activity Steps per Day") +
+  theme(panel.grid.major.y = element_line(size = 2, color = "gray"),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        plot.margin = unit(c(1,2,1,2), "lines"),
+        plot.title = element_text(size = 22, face = "bold", 
+                                  margin = margin(0,0,20,0)),
+        text = element_text(size = 18),
+        axis.ticks = element_line(linetype = 0),
+        axis.title.x = element_text(margin = margin(20,0,0,0)),
+        axis.text.x = element_text(size = 14, margin = margin(-15,0,0,0),
+                                   hjust = 1),
+        axis.title.y = element_text(margin = margin(0,20,0,0)),
+        axis.text.y = element_text(size = 14))
+```
 
 ### Are there differences in activity patterns between weekdays and weekends?
 
 ```{r}
 #create factor: weekday/weekend
 #repeat part 2 for weekdays and for weekends
+mod.activity.data <- mod.activity.data %>%
+    mutate(week.weekend = as.factor(ifelse(dow %in% c(1, 7), "weekend", "weekday")))
+
+mod.interval.avg <- mod.activity.data %>%
+    group_by(interval) %>%
+    summarize(avg.steps = mean(steps, na.rm = T))
+
+mod.max.interval <- mod.interval.avg %>% left_join(mod.activity.data, by = "interval") %>%
+  select(interval, start.time, end.time, avg.steps) %>% arrange(desc(avg.steps)) %>% slice(1) 
+
+ggplot(mod.?interval.avg, aes(interval)) +
+  geom_line(aes(y = avg.steps)) +
+  scale_x_continuous(name = "Time of Day",
+                     breaks = seq(0, 2300, 100),
+                     limits = c(0, 2355),
+                     label = function(x) { 
+                       x <- str_pad(x, 4, "left", "0")
+                       x <- paste0(substr(x, 1, 2), ":", substr(x, 3, 4))}) +
+  scale_y_continuous(name = "Average Number of Steps", 
+                     breaks = seq(0, 250, 50)) +
+  ggtitle("ADD TITLE") +
+  theme(panel.grid.major.y = element_line(size = 2, color = "gray"),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        plot.margin = unit(c(1,2,1,2), "lines"),
+        plot.title = element_text(size = 22, face = "bold", 
+                                  margin = margin(0,0,20,0)),
+        text = element_text(size = 18),
+        axis.ticks = element_line(linetype = 0),
+        axis.title.x = element_text(margin = margin(20,0,0,0)),
+        axis.text.x = element_text(size = 14, margin = margin(-15,0,0,0),
+                                   hjust = 1),
+        axis.title.y = element_text(margin = margin(0,20,0,0)),
+        axis.text.y = element_text(size = 14))
 ```
