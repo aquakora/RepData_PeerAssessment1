@@ -208,7 +208,7 @@ mod.max.interval <- mod.activity.data %>%
   top_n(1)
 ```
 
-During the week, the 5-minute interval `r mod.max.interval$start.time[1]` to `r mod.max.interval$end.time[1]` was, on average, the period with the most steps, with an average of `r mod.max.interval$avg.steps[1]` steps. By contrast, on weekends, the 5 minute interval `r mod.max.interval$start.time[2]` to `r mod.max.interval$end.time[2]` was, on average, the period with the most steps, with an average of `r mod.max.interval$avg.steps[2]` steps.
+During the week, the 5-minute interval `r mod.max.interval$start.time[1]` to `r mod.max.interval$end.time[1]` was, on average, the period with the most steps, with an average of `r mod.max.interval$avg.steps[1]` steps. By contrast, on weekends, the 5 minute interval `r mod.max.interval$start.time[2]` to `r mod.max.interval$end.time[2]` was, on average, the period with the most steps, with an average of `r mod.max.interval$avg.steps[2]` steps. 
 
 ```{r fig.width = 10, fig.height = 8}
 ggplot(mod.interval.avg, aes(interval)) +

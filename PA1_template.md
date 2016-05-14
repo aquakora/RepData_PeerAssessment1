@@ -219,7 +219,7 @@ mod.max.interval <- mod.activity.data %>%
 ## Selecting by avg.steps
 ```
 
-During the week, the 5-minute interval 08:35 to 08:39 was, on average, the period with the most steps, with an average of 237 steps. By contrast, on weekends, the 5 minute interval 09:15 to 09:19 was, on average, the period with the most steps, with an average of 175 steps.
+During the week, the 5-minute interval 08:35 to 08:39 was, on average, the period with the most steps, with an average of 237 steps. By contrast, on weekends, the 5 minute interval 09:15 to 09:19 was, on average, the period with the most steps, with an average of 175 steps. 
 
 
 ```r
